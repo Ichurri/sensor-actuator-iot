@@ -10,7 +10,6 @@ class WiFiManager {
 class TcpClient {
   -serverIP : const char*
   -serverPort : int
-  -client : WiFiClient
   +TcpClient(serverIP : const char*, serverPort : int)
   +connect() : bool
   +sendData(data : String) : void
@@ -41,7 +40,6 @@ class LedManager {
 }
 
 WiFiManager --> TcpClient : uses
-TcpClient --> WiFiClient : uses
 
 Sensor : "ESP32\nSensor"
 Actuator : "ESP32\nActuador"
