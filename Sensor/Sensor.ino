@@ -26,11 +26,10 @@ void setup() {
   Serial.println("Connected to WiFi");
   
   // Intentar conectarse al servidor
-  if (client.connect(SERVER_IP, SERVER_PORT)) {
+  if (client.connect(SERVER_IP, SERVER_PORT))
     Serial.println("Connected to TCP Server");
-  } else {
+  else
     Serial.println("Error connecting to server");
-  }
 }
 
 void loop() {
@@ -42,9 +41,7 @@ void loop() {
   if (client.connected()) {
     client.print(String(distance));
     client.print("\n"); // Enviar nueva línea para finalizar el mensaje
-  } else {
-    Serial.println("Disconnected from server");
-  }
+  } else 
   
   delay(2000); // Esperar 2 segundos antes de la siguiente medición
 }

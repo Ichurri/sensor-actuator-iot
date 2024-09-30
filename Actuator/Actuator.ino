@@ -26,11 +26,10 @@ void setup() {
   Serial.println("Connected to WiFi");
   
   // Intentar conectarse al servidor
-  if (client.connect(SERVER_IP, SERVER_PORT)) {
+  if (client.connect(SERVER_IP, SERVER_PORT))
     Serial.println("Connected to TCP Server");
-  } else {
+  else
     Serial.println("Error connecting to server");
-  }
 }
 
 void loop() {
@@ -40,11 +39,10 @@ void loop() {
     Serial.println("Command received: " + command);
     
     // Controlar el LED según el comando recibido
-    if (command == "ON") {
+    if (command == "ON")
       led.update(); // Encender el LED
-    } else if (command == "OFF") {
+    else if (command == "OFF")
       led.turnOff(); // Apagar el LED
-    }
   }
 
   delay(1000); // Evitar sobrecarga en la comunicación
