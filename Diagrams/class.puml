@@ -1,0 +1,58 @@
+@startuml
+
+class WiFiManager {
+  -ssid : const char*
+  -password : const char*
+  +WiFiManager(ssid : const char*, password : const char*)
+  +connect() : void
+}
+
+class TcpClient {
+  -serverIP : const char*
+  -serverPort : int
+  -client : WiFiClient
+  +TcpClient(serverIP : const char*, serverPort : int)
+  +connect() : bool
+  +sendData(data : String) : void
+  +receiveData() : String
+}
+
+class UltrasonicSensor {
+  -trigPin : int
+  -echoPin : int
+  +UltrasonicSensor(trigPin : int, echoPin : int)
+  +getDistance() : float
+}
+
+class Led {
+  -pin : int
+  -state : bool
+  -previousMillis : unsigned long
+  -interval : const long
+  +Led(pin : int, interval : long)
+  +update() : void
+  +turnOff() : void
+}
+
+class LedManager {
+  -leds : Led*[3]
+  +LedManager(led1 : Led*, led2 : Led*, led3 : Led*)
+  +blinkLED(indexToBlink : int) : void
+}
+
+WiFiManager --> TcpClient : uses
+TcpClient --> WiFiClient : uses
+
+Sensor : "ESP32\nSensor"
+Actuator : "ESP32\nActuador"
+
+Sensor --> UltrasonicSensor
+Sensor --> WiFiManager
+Sensor --> TcpClient
+
+Actuator --> Led
+Actuator --> LedManager
+Actuator --> WiFiManager
+Actuator --> TcpClient
+
+@enduml

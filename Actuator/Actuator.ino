@@ -58,11 +58,10 @@ void loop() {
     }
 
     // Comandos manuales
-    if (command == "ON") {
+    if (command == "ON")
       manualLed.update();  // Enciende el LED manual
-    } else if (command == "OFF") {
+    else if (command == "OFF")
       manualLed.turnOff();  // Apaga el LED manual
-    }
   }
 
   // Opcional: Implementar entrada manual desde el usuario (Serial)
