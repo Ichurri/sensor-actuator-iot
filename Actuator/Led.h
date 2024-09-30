@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 class Led {
   private:
     int pin;
@@ -9,6 +11,7 @@ class Led {
     Led(int pin, long interval)
       : pin(pin), state(LOW), previousMillis(0), interval(interval) {
       pinMode(pin, OUTPUT);
+      digitalWrite(pin, state);
     }
 
     void update() {
@@ -25,3 +28,4 @@ class Led {
       digitalWrite(pin, state);
     }
 };
+

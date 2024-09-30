@@ -1,47 +1,42 @@
 #include <WiFi.h>
 #include "UltrasonicSensor.h"
+#include "WiFiManager.h"
+#include "TCPClient.h"
 
-// Definir las credenciales de la red WiFi
-const char* SSID = "tuSSID";
-const char* PASSWORD = "tuPassword";
+// Configuración de la red Wi-Fi y del servidor
+const char* SSID = "Tu_SSID";
+const char* PASSWORD = "Tu_PASSWORD";
+const char* SERVER_IP = "192.168.1.100";  // IP del servidor Java
+const int SERVER_PORT = 12345;             // Puerto del servidor
 
-// Dirección IP y puerto del servidor Ja  va
-const char* SERVER_IP = "192.168.56.1"; // Dirección IP del servidor
-const int SERVER_PORT = 12345;
-
-UltrasonicSensor sensor(5, 18); // Ajustar pines del sensor (trigPin, echoPin)
-
-WiFiClient client;
+// Instanciación de las clases
+WiFiManager wifiManager(SSID, PASSWORD);
+TCPClient tcpClient(SERVER_IP, SERVER_PORT);
+UltrasonicSensor sensor(5, 18);  // Pines para el sensor ultrasónico (Trig: 5, Echo: 18)
 
 void setup() {
   Serial.begin(115200);
   
-  // Conectar a la red WiFi
-  WiFi.begin(SSID, PASSWORD);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Connecting to WiFi...");
+  // Conexión a WiFi
+  wifiManager.connect();
+  
+  // Conexión al servidor TCP
+  if (!tcpClient.connect()) {
+    Serial.println("Could not connect to the server. Rebooting...");
+    ESP.restart();
   }
-  
-  Serial.println("Connected to WiFi");
-  
-  // Intentar conectarse al servidor
-  if (client.connect(SERVER_IP, SERVER_PORT))
-    Serial.println("Connected to TCP Server");
-  else
-    Serial.println("Error connecting to server");
 }
 
 void loop() {
-  // Obtener la distancia medida por el sensor ultrasónico
+  // Leer la distancia del sensor ultrasónico
   float distance = sensor.getDistance();
   Serial.println("Distance: " + String(distance) + " cm");
   
-  // Enviar la distancia al servidor
-  if (client.connected()) {
-    client.print(String(distance));
-    client.print("\n"); // Enviar nueva línea para finalizar el mensaje
-  } else 
+  // Enviar la distancia al servidor Java
+  tcpClient.sendData(String(distance));
   
-  delay(2000); // Esperar 2 segundos antes de la siguiente medición
+  // Verificar si hay comandos del servidor (en este caso, no se espera ninguno)
+  // Puedes implementar lógica adicional si es necesario
+
+  delay(1000);  // Espera de 1 segundo antes de la siguiente lectura
 }

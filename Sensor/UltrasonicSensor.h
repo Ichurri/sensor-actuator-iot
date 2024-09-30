@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 class UltrasonicSensor {
   private:
     int trigPin;
@@ -22,3 +24,4 @@ class UltrasonicSensor {
       return duration * 0.034 / 2;
     }
 };
+
