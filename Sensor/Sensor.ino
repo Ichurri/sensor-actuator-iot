@@ -27,7 +27,7 @@ void setup() {
   
   // Intentar conectarse al servidor
   if (client.connect(SERVER_IP, SERVER_PORT)) {
-    Serial.println("Connecting to TCP Server");
+    Serial.println("Connected to TCP Server");
   } else {
     Serial.println("Error connecting to server");
   }
