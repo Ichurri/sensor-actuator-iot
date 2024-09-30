@@ -10,6 +10,8 @@ public class TcpServer {
         final Scanner scanner = new Scanner(System.in);  // Hacer final
 
         try {
+            String serverIP = InetAddress.getLocalHost().getHostAddress();
+            System.out.println("Server IP Address: " + serverIP);
             // Iniciar el servidor en el puerto 12345
             serverSocket = new ServerSocket(12345);
             System.out.println("Servidor iniciado en el puerto 12345");
