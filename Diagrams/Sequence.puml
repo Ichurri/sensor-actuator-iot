@@ -1,0 +1,38 @@
+@startuml
+actor User as U
+participant "Sensor" as S
+participant "TcpServer" as JS
+participant "Actuator" as A
+
+== Initial connection ==
+S -> JS: Establish TCP connection
+JS -> S: Confirm TCP connection
+
+A -> JS: Establish TCP connection
+JS -> A: Confirm TCP connection
+
+== Regular operation ==
+loop Every second
+    S -> JS: Send measured distance
+    JS -> S: Confirm data reception
+end
+
+== Processing on the server ==
+JS -> JS: Process received distance
+alt Distance < 20 cm
+    JS -> A: Command to blink LED 1
+    A -> A: Blink LED 1
+else Distance between 20 cm and 50 cm
+    JS -> A: Command to blink LED 2
+    A -> A: Blink LED 2
+else Distance > 50 cm
+    JS -> A: Command to blink LED 3
+    A -> A: Blink LED 3
+end
+
+== Manual control from user ==
+U -> JS: Manual command (ON/OFF)
+JS -> A: Send manual command (ON/OFF)
+A -> A: Turn manual LED ON or OFF
+
+@enduml
