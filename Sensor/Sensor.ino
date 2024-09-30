@@ -2,14 +2,13 @@
 #include "UltrasonicSensor.h"
 
 // Definir las credenciales de la red WiFi
-const char* ssid = "tuSSID";
-const char* password = "tuPassword";
+const char* SSID = "tuSSID";
+const char* PASSWORD = "tuPassword";
 
-// Dirección IP y puerto del servidor Java
-const char* serverIP = "192.168.1.100"; // Dirección IP del servidor
-const int serverPort = 12345;
+// Dirección IP y puerto del servidor Ja  va
+const char* SERVER_IP = "192.168.56.1"; // Dirección IP del servidor
+const int SERVER_PORT = 12345;
 
-// Crear una instancia del sensor ultrasónico
 UltrasonicSensor sensor(5, 18); // Ajustar pines del sensor (trigPin, echoPin)
 
 WiFiClient client;
@@ -18,33 +17,33 @@ void setup() {
   Serial.begin(115200);
   
   // Conectar a la red WiFi
-  WiFi.begin(ssid, password);
+  WiFi.begin(SSID, PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
-    Serial.println("Conectando a WiFi...");
+    Serial.println("Connecting to WiFi...");
   }
   
-  Serial.println("Conectado a WiFi");
+  Serial.println("Connected to WiFi");
   
   // Intentar conectarse al servidor
-  if (client.connect(serverIP, serverPort)) {
-    Serial.println("Conectado al servidor TCP");
+  if (client.connect(SERVER_IP, SERVER_PORT)) {
+    Serial.println("Connecting to TCP Server");
   } else {
-    Serial.println("Error al conectar al servidor");
+    Serial.println("Error connecting to server");
   }
 }
 
 void loop() {
   // Obtener la distancia medida por el sensor ultrasónico
   float distance = sensor.getDistance();
-  Serial.println("Distancia: " + String(distance) + " cm");
+  Serial.println("Distance: " + String(distance) + " cm");
   
   // Enviar la distancia al servidor
   if (client.connected()) {
     client.print(String(distance));
     client.print("\n"); // Enviar nueva línea para finalizar el mensaje
   } else {
-    Serial.println("Desconectado del servidor");
+    Serial.println("Disconnected from server");
   }
   
   delay(2000); // Esperar 2 segundos antes de la siguiente medición
