@@ -1,7 +1,7 @@
 #include <WiFi.h>
 #include "Led.h"
 #include "WiFiConnection.h"
-#include "TCPClient.h"
+#include "TcpClient.h"
 
 // Configuración de la red Wi-Fi y del servidor
 const char *SSID = "Tu_SSID";
@@ -11,7 +11,7 @@ const int SERVER_PORT = 12345;           // Puerto del servidor
 
 // Instanciación de las clases
 WiFiConnection wifiConnection(SSID, PASSWORD);
-TCPClient tcpClient(SERVER_IP, SERVER_PORT);
+TcpClient tcpClient(SERVER_IP, SERVER_PORT);
 
 // Configuración de los LEDs
 Led ledRed(4, 500);    // LED rojo en el pin 4

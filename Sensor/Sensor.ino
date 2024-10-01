@@ -1,7 +1,7 @@
 #include <WiFi.h>
 #include "UltrasonicSensor.h"
 #include "WiFiManager.h"
-#include "TCPClient.h"
+#include "TcpClient.h"
 
 // Configuración de la red Wi-Fi y del servidor
 const char *SSID = "Tu_SSID";
@@ -11,7 +11,7 @@ const int SERVER_PORT = 12345;           // Puerto del servidor
 
 // Instanciación de las clases
 WiFiManager wifiManager(SSID, PASSWORD);
-TCPClient tcpClient(SERVER_IP, SERVER_PORT);
+TcpClient tcpClient(SERVER_IP, SERVER_PORT);
 UltrasonicSensor sensor(5, 18); // Pines para el sensor ultrasónico (Trig: 5, Echo: 18)
 
 void setup()

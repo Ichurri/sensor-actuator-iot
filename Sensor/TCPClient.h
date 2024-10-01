@@ -3,14 +3,14 @@
 
 #include <WiFi.h>
 
-class TCPClient {
+class TcpClient {
   private:
     const char* serverIP;
     int serverPort;
     WiFiClient client;
 
   public:
-    TCPClient(const char* serverIP, int serverPort) {
+    TcpClient(const char* serverIP, int serverPort) {
       this->serverIP = serverIP;
       this->serverPort = serverPort;
     }
