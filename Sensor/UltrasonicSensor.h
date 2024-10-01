@@ -1,4 +1,5 @@
-#include <Arduino.h>
+#ifndef ULTRASONIC_SENSOR_H
+#define ULTRASONIC_SENSOR_H
 
 class UltrasonicSensor
 {
@@ -24,6 +25,9 @@ public:
     digitalWrite(trigPin, LOW);
 
     float duration = pulseIn(echoPin, HIGH);
-    return duration * 0.034 / 2;
+    return duration *0.034/2;
   }
+
 };
+
+#endif
