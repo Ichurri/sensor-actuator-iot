@@ -1,13 +1,13 @@
 #include <WiFi.h>
 
-class WiFiManager
+class WiFiConnection
 {
 private:
   const char *ssid;
   const char *password;
 
 public:
-  WiFiManager(const char *ssid, const char *password)
+  WiFiConnection(const char *ssid, const char *password)
   {
     this->ssid = ssid;
     this->password = password;
