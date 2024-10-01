@@ -1,5 +1,4 @@
 @startuml
-left to right direction
 
 class WiFiConnection {
   -ssid : const char*
@@ -8,11 +7,10 @@ class WiFiConnection {
   +connect() : void
 }
 
-class TCPClient {
+class TcpClient {
   -serverIP : const char*
   -serverPort : int
-  -client : WiFiClient
-  +TCPClient(serverIP : const char*, serverPort : int)
+  +TcpClient(serverIP : const char*, serverPort : int)
   +connect() : bool
   +sendData(data : String) : void
   +receiveData() : String
@@ -35,12 +33,17 @@ class Led {
   +turnOff() : void
 }
 
-Sensor -> UltrasonicSensor
-Sensor -> WiFiConnection
-Sensor -> TCPClient
+WiFiConnection --> TcpClient : uses
 
-Actuator -> Led
-Actuator -> WiFiConnection
-Actuator -> TCPClient
+Sensor : "ESP32\nSensor"
+Actuator : "ESP32\nActuator"
+
+Sensor --> UltrasonicSensor
+Sensor --> WiFiConnection
+Sensor --> TcpClient
+
+Actuator --> Led
+Actuator --> WiFiConnection
+Actuator --> TcpClient
 
 @enduml
