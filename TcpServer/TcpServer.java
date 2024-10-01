@@ -6,59 +6,65 @@ public class TcpServer {
     public static void main(String[] args) {
         ServerSocket serverSocket = null;
         Socket sensorSocket = null;
-        Socket actuadorSocket = null;
-        final Scanner scanner = new Scanner(System.in);  // Hacer final
+        Socket actuatorSocket = null;
+        final Scanner scanner = new Scanner(System.in);  // Mark scanner as final
 
         try {
+            // Get the server's IP address
             String serverIP = InetAddress.getLocalHost().getHostAddress();
             System.out.println("Server IP Address: " + serverIP);
-            // Iniciar el servidor en el puerto 12345
+
+            // Start the server on port 12345
             serverSocket = new ServerSocket(12345);
-            System.out.println("Servidor iniciado en el puerto 12345");
+            System.out.println("Server started on port 12345");
 
-            // Esperar conexiones de ambos ESP32
+            // Wait for connections from both ESP32 devices
             sensorSocket = serverSocket.accept();
-            System.out.println("Conectado al ESP32 sensor");
-            actuadorSocket = serverSocket.accept();
-            System.out.println("Conectado al ESP32 actuador");
+            System.out.println("Connected to ESP32 sensor");
+            actuatorSocket = serverSocket.accept();
+            System.out.println("Connected to ESP32 actuator");
 
-            // Flujos para la comunicación
+            // Create streams for communication
             BufferedReader sensorInput = new BufferedReader(new InputStreamReader(sensorSocket.getInputStream()));
-            PrintWriter actuadorOutput = new PrintWriter(actuadorSocket.getOutputStream(), true);
+            PrintWriter actuatorOutput = new PrintWriter(actuatorSocket.getOutputStream(), true);
 
-            // Iniciar un thread para manejar entradas manuales desde la PC
+            // Start a thread to handle manual input from the PC
             new Thread(() -> {
                 while (true) {
-                    System.out.println("Ingrese comando (ON/OFF): ");
-                    String command = scanner.nextLine();  // Ya se puede usar scanner
-                    actuadorOutput.println(command);
+                    System.out.println("Enter command (ON/OFF): ");
+                    String command = scanner.nextLine();  // Allow use of scanner
+                    actuatorOutput.println(command);
                 }
             }).start();
 
-            // Procesar datos del sensor
+            // Process data from the sensor
             String sensorData;
             while ((sensorData = sensorInput.readLine()) != null) {
-                System.out.println("Distancia recibida: " + sensorData + " cm");
+                System.out.println("Received distance: " + sensorData + " cm");
                 double distance = Double.parseDouble(sensorData);
 
-                // Tomar decisiones basadas en la distancia
-                if (distance < 20.0) {
-                    actuadorOutput.println("ON"); // Encender actuador si la distancia es menor a 20 cm
+                // Make decisions based on the distance
+                if (distance < 15.0) {
+                    actuatorOutput.println("RED");  // Turn on red LED
+                } else if (distance < 35.0) {
+                    actuatorOutput.println("YELLOW");  // Turn on yellow LED
+                } else if (distance < 60.0) {
+                    actuatorOutput.println("GREEN");  // Turn on green LED
                 } else {
-                    actuadorOutput.println("OFF"); // Apagar actuador si la distancia es mayor a 20 cm
+                    actuatorOutput.println("OFF");  // Turn off all LEDs
                 }
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            // Cerrar todos los recursos
+            // Close all resources
             try {
                 if (sensorSocket != null && !sensorSocket.isClosed()) {
                     sensorSocket.close();
                 }
-                if (actuadorSocket != null && !actuadorSocket.isClosed()) {
-                    actuadorSocket.close();
+                if (actuatorSocket != null && !actuatorSocket.isClosed()) {
+                    actuatorSocket.close();
                 }
                 if (serverSocket != null && !serverSocket.isClosed()) {
                     serverSocket.close();
