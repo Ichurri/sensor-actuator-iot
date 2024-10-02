@@ -1,3 +1,6 @@
+#ifndef WIFICONNECTION_H
+#define WIFICONNECTION_H
+
 #include <WiFi.h>
 
 class WiFiConnection
@@ -27,3 +30,5 @@ public:
     Serial.println(WiFi.localIP());
   }
 };
+
+#endif

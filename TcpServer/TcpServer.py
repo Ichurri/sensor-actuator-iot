@@ -1,66 +1,88 @@
 import socket
 import threading
 
-def handle_manual_input(actuator_conn):
-    while True:
-        command = input("Enter command (ON/OFF): ")
-        actuator_conn.sendall(command.encode())
+# Definir los estados
+states = {
+    'STATE_RED': 'RED',
+    'STATE_YELLOW': 'YELLOW',
+    'STATE_GREEN': 'GREEN',
+    'STATE_BLUE': 'BLUE'
+}
 
-def main():
-    # Get the server's IP address and start the server
-    host = socket.gethostbyname(socket.gethostname())
-    port = 12345
-    print(f"Server IP Address: {host}")
+current_state = None  # Estado actual
 
-    # Create server socket
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind((host, port))
-    server_socket.listen(2)
-    print(f"Server started on port {port}")
-
-    # Wait for connections from both ESP32 devices
-    sensor_conn, sensor_addr = server_socket.accept()
-    print(f"Connected to ESP32 sensor from {sensor_addr}")
-
-    actuator_conn, actuator_addr = server_socket.accept()
-    print(f"Connected to ESP32 actuator from {actuator_addr}")
-
-    # Start thread for manual input handling
-    manual_thread = threading.Thread(target=handle_manual_input, args=(actuator_conn,))
-    manual_thread.start()
+def handle_sensor(sensor_conn, actuator_conn):
+    global current_state  # Hacer la variable global
 
     try:
-        # Process data from the sensor
         while True:
-            sensor_data = sensor_conn.recv(1024).decode()
-            if not sensor_data:
-                break
+            print("Esperando datos del sensor...")  # Depuración adicional
+            data = sensor_conn.recv(1024)  # Recibe los datos del sensor
+            if not data:
+                print("Sensor desconectado.")
+                break  # Sale del bucle cuando el sensor se desconecta
 
-            print(f"Received distance: {sensor_data} cm")
-            try:
-                distance = float(sensor_data)
+            state = data.decode().strip()  # Decodificar los datos recibidos
+            print(f"Estado recibido del sensor: {state}")
 
-                # Make decisions based on the distance
-                if distance < 15.0:
-                    actuator_conn.sendall(b"RED")  # Turn on red LED
-                elif distance < 35.0:
-                    actuator_conn.sendall(b"YELLOW")  # Turn on yellow LED
-                elif distance < 60.0:
-                    actuator_conn.sendall(b"GREEN")  # Turn on green LED
-                else:
-                    actuator_conn.sendall(b"OFF")  # Turn off all LEDs
-
-            except ValueError:
-                print(f"Invalid distance received: {sensor_data}")
+            # Solo enviar el nuevo estado al actuador si es diferente del actual
+            if state != current_state:
+                print(f"Nuevo estado detectado: {state}. Enviando al actuador.")
+                actuator_conn.sendall(state.encode())
+                current_state = state
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error en el manejo del sensor: {e}")
     finally:
-        # Close all connections
+        print("Cerrando conexión del sensor.")
         sensor_conn.close()
+
+def handle_actuator(actuator_conn):
+    try:
+        while True:
+            print("Esperando datos del actuador...")  # Depuración adicional
+            state = actuator_conn.recv(1024).decode().strip()
+            if not state:
+                break
+            print(f"Actuador recibió: {state}")
+    except Exception as e:
+        print(f"Error en el manejo del actuador: {e}")
+    finally:
+        print("Cerrando conexión del actuador.")
         actuator_conn.close()
-        server_socket.close()
-        print("Server closed.")
+
+def main():
+    host = socket.gethostbyname(socket.gethostname())  # Obtener la IP del servidor
+    port = 1234
+    print(f"Dirección IP del servidor: {host}")
+
+    # Crear el socket del servidor
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Reutilizar la dirección del socket
+    server_socket.bind((host, port))
+    server_socket.listen(2)
+    print(f"Servidor iniciado en el puerto {port}")
+
+    # Conectar el sensor
+    sensor_conn, sensor_addr = server_socket.accept()
+    print(f"Conectado al sensor desde {sensor_addr}")
+
+    # Conectar el actuador
+    actuator_conn, actuator_addr = server_socket.accept()
+    print(f"Conectado al actuador desde {actuator_addr}")
+
+    # Manejar la comunicación con el sensor y el actuador en threads separados
+    sensor_thread = threading.Thread(target=handle_sensor, args=(sensor_conn, actuator_conn))
+    actuator_thread = threading.Thread(target=handle_actuator, args=(actuator_conn,))
+    
+    sensor_thread.start()
+    actuator_thread.start()
+
+    # Esperar a que ambos threads terminen
+    sensor_thread.join()
+    actuator_thread.join()
+
+    server_socket.close()
 
 if __name__ == "__main__":
     main()

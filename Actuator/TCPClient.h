@@ -3,49 +3,57 @@
 
 #include <WiFi.h>
 
-class TcpClient {
+class TCPClient {
   private:
     const char* serverIP;
     int serverPort;
     WiFiClient client;
 
   public:
-    TcpClient(const char* serverIP, int serverPort) {
+    TCPClient(const char* serverIP, int serverPort) {
       this->serverIP = serverIP;
       this->serverPort = serverPort;
     }
 
     bool connect() {
-      Serial.print("Connecting to server at ");
-      Serial.print(serverIP);
-      Serial.print(":");
-      Serial.println(serverPort);
-      
+      // Cerrar cualquier conexión existente antes de reconectar
+      if (client.connected()) {
+        client.stop();  // Detener la conexión anterior
+        Serial.println("Conexión anterior cerrada.");
+      }
+
+      // Intentar conectar de nuevo
       if (client.connect(serverIP, serverPort)) {
-        Serial.println("Connected to the server");
+        Serial.println("Conexión al servidor exitosa.");
         return true;
       } else {
-        Serial.println("Failed to connect to the server");
+        Serial.println("Error al conectar al servidor.");
         return false;
       }
     }
 
     void sendData(String data) {
       if (client.connected()) {
-        client.print(data);  // Send data as a string to the server
-        Serial.println("Data sent: " + data);
+        Serial.println("Enviando datos al servidor: " + data);  // Depuración adicional
+        client.println(data);
       } else {
-        Serial.println("Client not connected. Reconnecting...");
-        connect();  // Try to reconnect if connection is lost
+        Serial.println("No hay conexión al servidor. Reconectando...");
+        if (connect()) {  // Intentar reconectar
+          Serial.println("Reconectado. Enviando datos.");
+          client.println(data);  // Enviar datos después de reconectar
+        } else {
+          Serial.println("No se pudo reconectar.");
+        }
       }
     }
 
     String receiveData() {
       String received = "";
       if (client.connected() && client.available()) {
-        received = client.readStringUntil('\n');  // Read the incoming data
-        received.trim();  // Remove any trailing whitespace/newlines
-        Serial.println("Data received: " + received);
+        received = client.readStringUntil('\n');
+        received.trim();
+      } else {
+        Serial.println("No se recibieron datos del servidor.");
       }
       return received;
     }

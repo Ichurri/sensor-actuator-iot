@@ -1,46 +1,64 @@
-#include <WiFi.h>
-#include "UltrasonicSensor.h"
-#include "WiFiConnection.h"
-#include "TcpClient.h"
+#include "WiFiConnection.h"  // Incluir la clase WiFiConnection
+#include "TCPClient.h"        // Incluir la clase TCPClient
+#include "UltrasonicSensor.h" // Incluir la clase del sensor ultrasónico
 
-// Configuración de la red Wi-Fi y del servidor
-const char *SSID = "LABO17";
-const char *PASSWORD = "catolica17";
-const char *SERVER_IP = "192.168.79.82"; // IP del servidor Java
-const int SERVER_PORT = 12345;           // Puerto del servidor
+WiFiConnection wifi("TECHLAB", "catolica11");  // Configura tu SSID y contraseña
+TCPClient tcpClient("192.168.79.82", 1234);    // IP del servidor y puerto
+UltrasonicSensor sensor(17, 16);                // Pines del sensor ultrasónico (TRIG, ECHO)
 
-// Instanciación de las clases
-WiFiConnection wifiConnection(SSID, PASSWORD);
-TcpClient tcpClient(SERVER_IP, SERVER_PORT);
-UltrasonicSensor sensor(17, 16); // Pines para el sensor ultrasónico (Trig: 5, Echo: 18)
+String currentState = "";  // Estado actual
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
 
-  // Conexión a WiFi
-  wifiConnection.connect();
+  // Espera de 5 segundos antes de intentar conectarse
+  Serial.println("Esperando antes de intentar conectar...");
+  delay(5000);  // Espera 5 segundos
 
-  // Conexión al servidor TCP
-  if (!tcpClient.connect())
-  {
-    Serial.println("Could not connect to the server. Rebooting...");
-    ESP.restart();
+  // Conectar al WiFi
+  wifi.connect();
+
+  // Conectar al servidor TCP
+  if (tcpClient.connect()) {
+    Serial.println("Conectado al servidor TCP");
+  } else {
+    Serial.println("Error al conectar al servidor TCP");
   }
+
+  // Pedir los estados al servidor
+  tcpClient.sendData("GET_STATES");
+  String states = tcpClient.receiveData();
+  Serial.println("Estados recibidos: " + states);
 }
 
-void loop()
-{
-  // Leer la distancia del sensor ultrasónico
-  float distance = sensor.getDistance();
-  Serial.println("Distance: " + String(distance) + " cm");
+void loop() {
+  float distance = sensor.getDistance();  // Medir la distancia usando el sensor ultrasónico
 
+  if (distance != -1) {  // Si la distancia es válida
+    Serial.print("Distancia detectada: ");
+    Serial.print(distance);
+    Serial.println(" cm");
 
-  // Enviar la distancia al servidor Java
-  tcpClient.sendData(String(distance));
+    String newState = "";
 
-  // Verificar si hay comandos del servidor (en este caso, no se espera ninguno)
-  // Puedes implementar lógica adicional si es necesario
+    // Determinar el estado basado en la distancia
+    if (distance < 15) {
+      newState = "STATE_RED";
+    } else if (distance >= 15 && distance < 25) {
+      newState = "STATE_YELLOW";
+    } else if (distance >= 25 && distance < 40) {
+      newState = "STATE_GREEN";
+    } else {
+      newState = "STATE_BLUE";
+    }
 
-  delay(1000); // Espera de 1 segundo antes de la siguiente lectura
+    // Solo enviar el estado si ha cambiado
+    if (newState != currentState) {
+      Serial.println("Nuevo estado: " + newState);
+      tcpClient.sendData(newState);  // Enviar el nuevo estado al servidor
+      currentState = newState;  // Actualizar el estado actual
+    }
+  }
+
+  delay(1000);  // Espera antes de la siguiente medición
 }
