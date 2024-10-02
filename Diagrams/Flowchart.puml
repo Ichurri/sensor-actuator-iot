@@ -1,0 +1,26 @@
+@startuml
+start
+
+:Start the system;
+:Measure distance;
+
+if (d > 40 cm) then (yes)
+  :Turn on Blue LED;
+  :Set State 4;
+else if (25 cm ≤ d < 40 cm) then (yes)
+  :Turn on Green LED;
+  :Set State 3;
+else if (15 cm ≤ d < 25 cm) then (yes)
+  :Turn on Yellow LED;
+  :Set State 2;
+else if (d < 15 cm) then (yes)
+  :Turn on Red LED;
+  :Set State 1;
+else (no)
+  :Turn off all LEDs;
+  :Set State 0;
+endif
+
+:Send state to server;
+stop
+@enduml

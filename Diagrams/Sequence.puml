@@ -1,38 +1,35 @@
 @startuml
-actor User as U
-participant "Sensor" as S
-participant "TcpServer" as JS
-participant "Actuator" as A
 
-== Initial connection ==
-S -> JS: Establish TCP connection
-JS -> S: Confirm TCP connection
+participant Sensor as "ESP32 Sensor"
+participant Server as "TCP Server"
+participant Actuator as "ESP32 Actuator"
 
-A -> JS: Establish TCP connection
-JS -> A: Confirm TCP connection
+== Connection and State Request ==
+Sensor -> Server: Connect to server
+Sensor -> Server: Request states (GET_STATES)
+Server -> Sensor: Send available states (STATE_RED, STATE_YELLOW, STATE_GREEN, STATE_BLUE)
 
-== Regular operation ==
-loop Every second
-    S -> JS: Send measured distance
-    JS -> S: Confirm data reception
+== Distance Measurement and State Sending ==
+loop Distance Measurement (every 100ms)
+  Sensor -> Sensor: Measure distance
+  alt distance < 15 cm
+    Sensor -> Sensor: Set STATE_RED
+  else distance ≥ 15 cm and distance < 25 cm
+    Sensor -> Sensor: Set STATE_YELLOW
+  else distance ≥ 25 cm and distance < 40 cm
+    Sensor -> Sensor: Set STATE_GREEN
+  else distance ≥ 40 cm
+    Sensor -> Sensor: Set STATE_BLUE
+  end
+  
+  alt New state detected
+    Sensor -> Server: Send new state (e.g., STATE_RED)
+    
+    Server -> Actuator: Forward state to Actuator
+    Actuator -> Actuator: Act on received state (e.g., turn on red LED)
+  else No change in state
+    Sensor -> Sensor: Continue without sending state
+  end
 end
-
-== Processing on the server ==
-JS -> JS: Process received distance
-alt Distance < 20 cm
-    JS -> A: Command to blink LED 1
-    A -> A: Blink LED 1
-else Distance between 20 cm and 50 cm
-    JS -> A: Command to blink LED 2
-    A -> A: Blink LED 2
-else Distance > 50 cm
-    JS -> A: Command to blink LED 3
-    A -> A: Blink LED 3
-end
-
-== Manual control from user ==
-U -> JS: Manual command (ON/OFF)
-JS -> A: Send manual command (ON/OFF)
-A -> A: Turn manual LED ON or OFF
 
 @enduml

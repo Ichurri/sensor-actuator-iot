@@ -14,6 +14,7 @@ class TcpClient {
   +connect() : bool
   +sendData(data : String) : void
   +receiveData() : String
+  +isConnected() : bool
 }
 
 class UltrasonicSensor {
@@ -33,8 +34,6 @@ class Led {
   +turnOff() : void
 }
 
-WiFiConnection --> TcpClient : uses
-
 Sensor : "ESP32\nSensor"
 Actuator : "ESP32\nActuator"
 
@@ -45,5 +44,7 @@ Sensor --> TcpClient
 Actuator --> Led
 Actuator --> WiFiConnection
 Actuator --> TcpClient
+
+WiFiConnection <-- TcpClient : uses
 
 @enduml
