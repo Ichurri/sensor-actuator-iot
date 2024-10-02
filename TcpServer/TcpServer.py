@@ -1,7 +1,6 @@
 import socket
 import threading
 
-# Definir los estados
 states = {
     'STATE_RED': 'RED',
     'STATE_YELLOW': 'YELLOW',
@@ -9,80 +8,70 @@ states = {
     'STATE_BLUE': 'BLUE'
 }
 
-current_state = None  # Estado actual
+current_state = None  
 
 def handle_sensor(sensor_conn, actuator_conn):
-    global current_state  # Hacer la variable global
+    global current_state  
 
     try:
         while True:
-            print("Esperando datos del sensor...")  # Depuración adicional
-            data = sensor_conn.recv(1024)  # Recibe los datos del sensor
+            data = sensor_conn.recv(1024)  
             if not data:
-                print("Sensor desconectado.")
-                break  # Sale del bucle cuando el sensor se desconecta
+                print("Sensor disconnected.")
+                break  
 
-            state = data.decode().strip()  # Decodificar los datos recibidos
-            print(f"Estado recibido del sensor: {state}")
+            print(f"State received from sensor: {state}")
 
-            # Solo enviar el nuevo estado al actuador si es diferente del actual
             if state != current_state:
-                print(f"Nuevo estado detectado: {state}. Enviando al actuador.")
+                print(f"New state detected: {state}. Sending to actuator.")
                 actuator_conn.sendall(state.encode())
                 current_state = state
 
     except Exception as e:
-        print(f"Error en el manejo del sensor: {e}")
+        print(f"Error handling sensor: {e}")
     finally:
-        print("Cerrando conexión del sensor.")
+        print("Closing sensor connection.")
         sensor_conn.close()
 
 def handle_actuator(actuator_conn):
     try:
         while True:
-            print("Esperando datos del actuador...")  # Depuración adicional
             state = actuator_conn.recv(1024).decode().strip()
             if not state:
                 break
-            print(f"Actuador recibió: {state}")
+            print(f"Actuator received: {state}")
     except Exception as e:
-        print(f"Error en el manejo del actuador: {e}")
+        print(f"Error handling actuator: {e}")
     finally:
-        print("Cerrando conexión del actuador.")
+        print("Closing actuator connection.")
         actuator_conn.close()
 
 def main():
-    host = socket.gethostbyname(socket.gethostname())  # Obtener la IP del servidor
+    host = socket.gethostbyname(socket.gethostname())  
     port = 1234
-    print(f"Dirección IP del servidor: {host}")
+    print(f"Server IP address: {host}")
 
-    # Crear el socket del servidor
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Reutilizar la dirección del socket
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
     server_socket.bind((host, port))
     server_socket.listen(2)
-    print(f"Servidor iniciado en el puerto {port}")
+    print(f"Server started on port {port}")
 
-    # Conectar el sensor
     sensor_conn, sensor_addr = server_socket.accept()
-    print(f"Conectado al sensor desde {sensor_addr}")
+    print(f"Connected to sensor from {sensor_addr}")
 
-    # Conectar el actuador
     actuator_conn, actuator_addr = server_socket.accept()
-    print(f"Conectado al actuador desde {actuator_addr}")
+    print(f"Connected to actuator from {actuator_addr}")
 
-    # Manejar la comunicación con el sensor y el actuador en threads separados
     sensor_thread = threading.Thread(target=handle_sensor, args=(sensor_conn, actuator_conn))
     actuator_thread = threading.Thread(target=handle_actuator, args=(actuator_conn,))
     
     sensor_thread.start()
     actuator_thread.start()
 
-    # Esperar a que ambos threads terminen
     sensor_thread.join()
     actuator_thread.join()
 
     server_socket.close()
 
-if __name__ == "__main__":
-    main()
+main()
